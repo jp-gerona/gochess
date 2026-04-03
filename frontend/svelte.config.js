@@ -1,7 +1,24 @@
-import sveltePreprocess from 'svelte-preprocess'
+import adapter from "@sveltejs/adapter-static";
+import { relative, sep } from "node:path";
 
-export default {
-  // Consult https://github.com/sveltejs/svelte-preprocess
-  // for more information about preprocessors
-  preprocess: sveltePreprocess()
-}
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+  compilerOptions: {
+    // defaults to rune mode for the project, except for `node_modules`. Can be removed in svelte 6.
+    runes: ({ filename }) => {
+      const relativePath = relative(import.meta.dirname, filename);
+      const pathSegments = relativePath.toLowerCase().split(sep);
+      const isExternalLibrary = pathSegments.includes("node_modules");
+
+      return isExternalLibrary ? undefined : true;
+    },
+  },
+  kit: {
+    // see https://svelte.dev/docs/kit/adapters for more information about adapters.
+    adapter: adapter({
+      fallback: "index.html",
+    }),
+  },
+};
+
+export default config;
